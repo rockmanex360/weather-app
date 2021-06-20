@@ -166,8 +166,8 @@
                     return response.json();
                 })
                 .then(item => {
-                    // const content = document.querySelector(".weather");
-                    // content.style.visibility = "visible";
+                    const content = document.querySelector(".weather");
+                    content.style.visibility = "visible";
                     console.log(item);
                     const icon = `
                         <img src="https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png" alt="${item.weather[0].main}" id="icon">
