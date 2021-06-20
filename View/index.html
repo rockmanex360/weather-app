@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather App</title>
+
+    <link rel="stylesheet" href="./Style/navbar.css">
+    <link rel="stylesheet" href="./Style/index.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#">Weather App</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Bandung, Indonesia 20˚ C</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div class="form">
+            <span>Location : </span>
+            <div class="form-group">
+                <select name="country" id="country">
+                </select>
+            </div>
+            <div class="form-group">
+                <select name="city" id="city">
+                    <option value="">Select City</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary search">Search</button>
+        </div>
+        <br>
+        <div class="weather">
+            <div class="item" id="current-weather">
+                <span>Current Weather</span>
+                <div class="weather-icon">
+                    <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather" id="icon">
+                    22˚C
+                </div>
+                <div class="weather-name">Cloudy</div>
+            </div>
+            <div class="item" id="real-feel">
+                <span>12.00 PM</span>
+                <div class="real-feel-sub">
+                    <span>temp_min</span>
+                    <span>temp_max</span>
+                </div>
+            </div>
+            <div class="item">
+                <ul class="item-list">
+                    <li class="wind">Clouds</li>
+                    <li class="wind">94%</li>
+                </ul>
+            </div>
+            <div class="item">
+                <ul class="item-list">
+                    <li class="wind">Pressure</li>
+                    <li class="wind">1012</li>
+                </ul>
+            </div>
+            <div class="item">
+                <ul class="item-list">
+                    <li class="wind">Wind Gust</li>
+                    <li class="wind">10 KM/S</li>
+                </ul>
+            </div>
+            <div class="item">
+                <ul class="item-list">
+                    <li class="wind">Visibility</li>
+                    <li class="wind">10000</li>
+                </ul>
+            </div>
+
+            <div class="item">
+                <ul class="item-list">
+                    <li class="wind">Humidity</li>
+                    <li class="wind">10 KM/S</li>
+                </ul>
+            </div>
+            <div class="item">
+                <ul class="item-list">
+                    <li class="wind">Wind</li>
+                    <li class="wind">10 KM/S</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    window.addEventListener("load", (event) => {
+        fetch("http://localhost:5000/country")
+            .then(response => {
+                if (response.status != 200)
+                    throw new Error(response.statusText);
+                return response.json();
+            })
+            .then(item => {
+                const country = document.querySelector("#country");
+                country.innerHTML = '';
+
+                const option = document.createElement("option");
+                option.appendChild(document.createTextNode("Select Country"));
+                option.value = "";
+
+                country.appendChild(option);
+                
+                const html = item.countries.forEach(element => {
+                    const elementOption = document.createElement("option");
+                    elementOption.appendChild(document.createTextNode(element));
+                    elementOption.value = element;
+
+                    country.appendChild(elementOption);
+                });
+            });
+        
+        var countryDoc = document.querySelector("#country");
+        countryDoc.addEventListener("change", (event) => {
+            const countryValue = countryDoc.value;
+            fetch(`http://localhost:5000/city?Country=${countryValue}`)
+                .then(response => {
+                    if (response.status != 200)
+                        throw new Error(response.statusText);
+                    
+                    return response.json(); 
+                })
+                .then(item => {
+                    const city = document.querySelector("#city");
+                    city.innerHTML = '';
+
+                    const option = document.createElement("option");
+                    option.appendChild(document.createTextNode("Select City"));
+                    option.value = "";
+
+                    city.appendChild(option);
+                    
+                    item.cities.forEach(element => {
+                        const elementOption = document.createElement("option");
+                        elementOption.appendChild(document.createTextNode(element));
+                        elementOption.value = element;
+
+                        city.appendChild(elementOption);
+                    });
+                })
+        })
+        var button = document.querySelector(".search");
+        button.addEventListener("click", (event) => {
+            const city = document.querySelector("#city").value;
+
+            fetch(`http://localhost:5000/weather?City=${city}`)
+                .then(response => {
+                    if (response.status != 200)
+                        throw new Error(response.status);
+                    return response.json();
+                })
+                .then(item => {
+                    // const content = document.querySelector(".weather");
+                    // content.style.visibility = "visible";
+                    console.log(item);
+                    const icon = `
+                        <img src="https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png" alt="${item.weather[0].main}" id="icon">
+                        ${parseInt(item.main.temp - 273.15)}˚C
+                    `;
+                    const weatherIcon = document.querySelector(".weather-icon").innerHTML = icon;
+                    const weatherName = document.querySelector(".weather-name").innerHTML = item.weather[0].main;
+                    
+                    const clouds = document.querySelectorAll(".item")[2].querySelectorAll(".wind")[1].innerHTML = `${item.clouds.all}%`;
+                    
+                    var date = new Date(item.dt);
+                    console.log(date.getHours);
+                    const temp = document.querySelectorAll(".item")[1];
+                    temp.querySelector("span").innerHTML = `${date.getHours()}:${date.getMinutes()}`;
+
+                    temp.querySelector(".real-feel-sub").querySelectorAll("span")[0].innerHTML = `Lowest Temperature : ${parseInt(item.main.temp_max - 273.15)}˚C`
+                    temp.querySelector(".real-feel-sub").querySelectorAll("span")[1].innerHTML = `Highest Temperature : ${parseInt(item.main.temp_min - 273.15)}˚C`
+                    
+                    const pressure = document.querySelectorAll(".item")[3].querySelectorAll(".wind")[1].innerHTML = `${item.main.pressure} mb`;
+                    const windGust = document.querySelectorAll(".item")[4].querySelectorAll(".wind")[1].innerHTML = `${item.wind.gust}`;
+                    
+                    const visibility = document.querySelectorAll(".item")[5].querySelectorAll(".wind")[1].innerHTML = `${item.visibility / 1000} KM`;
+                    const humidity = document.querySelectorAll(".item")[6].querySelectorAll(".wind")[1].innerHTML = `${item.main.humidity}%`;
+                    const windSpeed = document.querySelectorAll(".item")[7].querySelectorAll(".wind")[1].innerHTML = `${item.wind.speed} m/s`;
+                });
+        })
+    });
+</script>
